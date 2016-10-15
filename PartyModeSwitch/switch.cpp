@@ -13,7 +13,7 @@ Switch::Switch(int switchPin, int lightPin)
     //If switch is on at startup, blink
     //Otherwise, set light off
     if(isOn()) {
-
+        blinkLight();
     } else {
         turnOffLight();
     }
@@ -24,21 +24,45 @@ bool Switch::isOn()
     return (digitalRead(switchPin) == HIGH);
 }
 
-bool Switch::lightIsOn()
+LightMode Switch::getLightMode()
 {
-    return lightStatus; 
+    return lightMode; 
+}
+
+void Switch::setLight(bool setOn)
+{
+    if(setOn) {
+        digitalWrite(lightPin, HIGH);
+        lightStatus = true;
+    } else {
+        digitalWrite(lightPin, LOW);
+        lightStatus = false;
+    }
 }
 
 void Switch::turnOffLight()
 {
-    digitalWrite(lightPin, LOW);
-    lightStatus = false;
+    setLight(false);
+    lightMode = OFF;
 }
 
 void Switch::turnOnLight()
 {
-    digitalWrite(lightPin, HIGH);
-    lightStatus = true;
+    setLight(true);
+    lightMode = ON;
+}
+
+void Switch::toggleLight()
+{
+    setLight(!lightStatus);
+}
+
+void Switch::blinkLight(uint8_t ms)
+{
+    setLight(!lightStatus);
+    lightMode = BLINK;
+    blinkRate = ms;
+    msToToggle = blinkRate;
 }
 
 void Switch::configInterrupt(void (* isr)(), int mode)
@@ -46,8 +70,14 @@ void Switch::configInterrupt(void (* isr)(), int mode)
     attachInterrupt(digitalPinToInterrupt(switchPin), isr, mode);
 }
 
+
+//Hopefully called every ms
 void Switch::notify()
 {
-    //Called every ms
+    msToToggle--;
+    if(lightMode == BLINK && msToToggle <= 0) {
+        toggleLight();
+        msToToggle = blinkRate;
+    }
 }
 

@@ -25,7 +25,7 @@ void setup() {
     timer0.addObserver(three);
 
     //Set switch one to wake up the arduino
-    one->configInterrupt(SWITCH_ONE_ISR, RISING);
+    //one->configInterrupt(SWITCH_ONE_ISR, RISING);
 }
 
 void loop() {
@@ -33,12 +33,7 @@ void loop() {
 
 }
 
-void SWITCH_ONE_ISR(){
-    
-}
-
-
-// Interrupt is called once a millisecond, 
+// Interrupt is called once a millisecond
 SIGNAL(TIMER0_COMPA_vect) 
 {
     timer0.handleInterrupt();

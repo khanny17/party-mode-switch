@@ -4,6 +4,13 @@
 #include "Arduino.h"
 #include "observer.h"
 
+enum LightMode
+{
+    ON,
+    OFF,
+    BLINK
+};
+
 class Switch : public Observer
 {
 public:
@@ -12,14 +19,20 @@ public:
   //Returns true if the switch is in the on position
   bool isOn();
 
-  //Returns true if the light is on
-  bool lightIsOn();
+  //Returns mode of light
+  LightMode getLightMode();
 
   //Turns on the light
   void turnOnLight();
 
   //Turns off the light
   void turnOffLight();
+
+  //Toggles light
+  void toggleLight();
+
+  //Blinks light
+  void blinkLight(uint8_t ms = 500);
 
   //Attaches an interrupt to the switch pin
   void configInterrupt(void (* isr)(), int mode); 
@@ -29,7 +42,10 @@ public:
 
 private:
   bool lightStatus;
-  int switchPin, lightPin;
+  LightMode lightMode;
+  int switchPin, lightPin, blinkRate, msToToggle;
+
+  void setLight(bool setOn);
   
 };
 
