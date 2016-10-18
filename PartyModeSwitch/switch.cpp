@@ -1,68 +1,47 @@
 #include "switch.h"
 
-Switch::Switch(int switchPin, int lightPin)
+Switch::Switch(int switchPin, int lightPin, Timer0 *timer0)
 {
     //Get the pins
     this->switchPin = switchPin;
-    this->lightPin = lightPin;
+    this->light = new Light(lightPin, timer0);
+    lastStatus = false;
 
     //Configure pins
     pinMode(switchPin, INPUT);
-    pinMode(lightPin, OUTPUT);
 
     //If switch is on at startup, blink
     //Otherwise, set light off
     if(isOn()) {
-        blinkLight();
+        light->blink();
     } else {
-        turnOffLight();
+        light->turnOff();
     }
+}
+
+Switch::~Switch()
+{
+    delete light;
 }
 
 bool Switch::isOn()
 {
-    return (digitalRead(switchPin) == HIGH);
+    return lastStatus;
 }
 
-LightMode Switch::getLightMode()
+void Switch::turnLightOn()
 {
-    return lightMode; 
+    light->turnOn();
 }
 
-void Switch::setLight(bool setOn)
+void Switch::turnLightOff()
 {
-    if(setOn) {
-        digitalWrite(lightPin, HIGH);
-        lightStatus = true;
-    } else {
-        digitalWrite(lightPin, LOW);
-        lightStatus = false;
-    }
+    light->turnOff();
 }
 
-void Switch::turnOffLight()
+void Switch::blinkLight()
 {
-    setLight(false);
-    lightMode = OFF;
-}
-
-void Switch::turnOnLight()
-{
-    setLight(true);
-    lightMode = ON;
-}
-
-void Switch::toggleLight()
-{
-    setLight(!lightStatus);
-}
-
-void Switch::blinkLight(uint8_t ms)
-{
-    setLight(!lightStatus);
-    lightMode = BLINK;
-    blinkRate = ms;
-    msToToggle = blinkRate;
+    light->blink();
 }
 
 void Switch::configInterrupt(void (* isr)(), int mode)
@@ -70,14 +49,15 @@ void Switch::configInterrupt(void (* isr)(), int mode)
     attachInterrupt(digitalPinToInterrupt(switchPin), isr, mode);
 }
 
+void Switch::check(void (*callback)(bool)) {
+    bool newStatus = (digitalRead(switchPin) == HIGH);
 
-//Hopefully called every ms
-void Switch::notify()
-{
-    msToToggle--;
-    if(lightMode == BLINK && msToToggle <= 0) {
-        toggleLight();
-        msToToggle = blinkRate;
+    if(newStatus != lastStatus) {
+        callback(newStatus);
     }
+    
+    lastStatus = newStatus;
 }
+
+
 

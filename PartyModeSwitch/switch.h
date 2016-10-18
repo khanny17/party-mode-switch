@@ -2,50 +2,32 @@
 #define SWITCH_H
 
 #include "Arduino.h"
-#include "observer.h"
+#include "light.h"
+#include "timer0.h"
 
-enum LightMode
-{
-    ON,
-    OFF,
-    BLINK
-};
-
-class Switch : public Observer
+class Switch
 {
 public:
-  Switch(int switchPin, int lightPin);
+  Switch(int switchPin, int lightPin, Timer0 *timer0);
+  ~Switch();
 
   //Returns true if the switch is in the on position
   bool isOn();
 
-  //Returns mode of light
-  LightMode getLightMode();
+  void turnLightOn();
+  void turnLightOff();
+  void blinkLight();
 
-  //Turns on the light
-  void turnOnLight();
-
-  //Turns off the light
-  void turnOffLight();
-
-  //Toggles light
-  void toggleLight();
-
-  //Blinks light
-  void blinkLight(uint8_t ms = 500);
+  //Notifies if it has changed since last time
+  void check(void (*callback)(bool));
 
   //Attaches an interrupt to the switch pin
   void configInterrupt(void (* isr)(), int mode); 
 
-  //Called when there is an update
-  void notify();
-
 private:
-  bool lightStatus;
-  LightMode lightMode;
-  int switchPin, lightPin, blinkRate, msToToggle;
-
-  void setLight(bool setOn);
+  bool lastStatus;
+  int switchPin;
+  Light *light;
   
 };
 
