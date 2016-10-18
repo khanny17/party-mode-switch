@@ -8,7 +8,7 @@ Switch::Switch(int switchPin, int lightPin, Timer0 *timer0)
     lastStatus = false;
 
     //Configure pins
-    pinMode(switchPin, INPUT);
+    pinMode(switchPin, INPUT_PULLUP);
 
     //If switch is on at startup, blink
     //Otherwise, set light off
@@ -26,7 +26,7 @@ Switch::~Switch()
 
 bool Switch::isOn()
 {
-    return lastStatus;
+    return (digitalRead(switchPin) == LOW);
 }
 
 void Switch::turnLightOn()
@@ -50,7 +50,7 @@ void Switch::configInterrupt(void (* isr)(), int mode)
 }
 
 void Switch::check(void (*callback)(bool)) {
-    bool newStatus = (digitalRead(switchPin) == HIGH);
+    bool newStatus = isOn();
 
     if(newStatus != lastStatus) {
         callback(newStatus);

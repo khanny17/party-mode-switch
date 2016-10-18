@@ -18,6 +18,7 @@ public:
     void wasPressed();
 
     void blinkLight();
+    void turnLightOff();
 
 private:
     bool pressedSinceLastCheck;

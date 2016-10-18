@@ -6,8 +6,13 @@ Button::Button(int inputPin, int lightPin, void (*isr)(), Timer0 *timer0)
     this->light = new Light(lightPin, timer0);
     this->pressedSinceLastCheck = false;
 
+    //Configure pins
+    pinMode(inputPin, INPUT_PULLUP);
+
     //Configure interrupt
     attachInterrupt(digitalPinToInterrupt(inputPin), isr, RISING);
+
+    light->turnOff();
 }
 
 Button::~Button()
@@ -23,6 +28,11 @@ void Button::wasPressed() {
 void Button::blinkLight()
 {
     light->blink();
+}
+
+void Button::turnLightOff()
+{
+    light->turnOff();
 }
 
 void Button::check(void (*callback)()) {

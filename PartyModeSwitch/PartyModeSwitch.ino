@@ -11,8 +11,8 @@
 #define SWITCH_2_LIGHT_PIN 6
 #define SWITCH_3_PIN       7
 #define SWITCH_3_LIGHT_PIN 8
-#define BUTTON_PIN         9
-#define BUTTON_LIGHT_PIN   3
+#define BUTTON_PIN         2
+#define BUTTON_LIGHT_PIN   9
 
 Timer0 timer0;
 Switch *one;
@@ -20,14 +20,18 @@ Switch *two;
 Switch *three;
 Button *button;
 
-void setup() {
+bool primedAndReady = false;
+
+void setup() {  
+    //Serial.begin(9600);
+  
     one = new Switch(SWITCH_1_PIN, SWITCH_1_LIGHT_PIN, &timer0);
     two = new Switch(SWITCH_2_PIN, SWITCH_2_LIGHT_PIN, &timer0);
     three = new Switch(SWITCH_3_PIN, SWITCH_3_LIGHT_PIN, &timer0);
     button = new Button(BUTTON_PIN, BUTTON_LIGHT_PIN, BUTTON_ISR, &timer0);
 }
 
-void loop() {
+void loop() {  
     // put your main code here, to run repeatedly:
     one->check([](bool switchedOn) {
         if(switchedOn && !two->isOn() && !three->isOn()) {
@@ -38,6 +42,7 @@ void loop() {
             one->blinkLight();
         } else {
             one->turnLightOff();
+            primedAndReady = false;
         }
     });
 
@@ -50,6 +55,7 @@ void loop() {
             two->blinkLight();
         } else {
             two->turnLightOff();
+            primedAndReady = false;
         }
     });
 
@@ -58,22 +64,31 @@ void loop() {
             //Do whatever happens when switch 3 comes on in order
             three->turnLightOn();
             button->blinkLight();
+            primedAndReady = true;
         } else if(switchedOn) {
             //Switched on but not in order
             three->blinkLight();
         } else {
             three->turnLightOff();
+            primedAndReady = false;
         }
     });
 
     button->check([]() {
-        if(one->isOn() && two->isOn() && three->isOn()) {
+        if(primedAndReady) {
             //Activate party mode!
             one->blinkLight();
             two->blinkLight();
             three->blinkLight();
+            primedAndReady = false;
         }
     });
+
+    if(!primedAndReady) {
+        button->turnLightOff();
+    }
+
+    delay(10); //I think we are going too fast
 }
 
 
