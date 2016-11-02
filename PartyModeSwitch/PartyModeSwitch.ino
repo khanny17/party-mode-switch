@@ -1,7 +1,9 @@
+#include <RCSwitch.h>
 #include <LinkedList.h>
 #include "switch.h"
 #include "timer0.h"
 #include "button.h"
+#include "transmitter.h"
 
 //For the uno, only pins 2 & 3 are interruptable
 
@@ -14,11 +16,19 @@
 #define BUTTON_PIN         2
 #define BUTTON_LIGHT_PIN   9
 
+#define RF_POWER_PIN       11
+#define RF_DATA_PIN        10
+
+//Stuff that would theoretically need to be globally configured somewhere
+#define DEVICE_ID 1
+#define ENGAGE_PARTY 1
+
 Timer0 timer0;
 Switch *one;
 Switch *two;
 Switch *three;
 Button *button;
+Transmitter *transmitter;
 
 bool primedAndReady = false;
 
@@ -29,6 +39,8 @@ void setup() {
     two = new Switch(SWITCH_2_PIN, SWITCH_2_LIGHT_PIN, &timer0);
     three = new Switch(SWITCH_3_PIN, SWITCH_3_LIGHT_PIN, &timer0);
     button = new Button(BUTTON_PIN, BUTTON_LIGHT_PIN, BUTTON_ISR, &timer0);
+
+    transmitter = new Transmitter(RF_POWER_PIN, RF_DATA_PIN, DEVICE_ID);
 }
 
 void loop() {  
@@ -81,6 +93,8 @@ void loop() {
             two->blinkLight();
             three->blinkLight();
             primedAndReady = false;
+
+            transmitter->send(ENGAGE_PARTY);
         }
     });
 
